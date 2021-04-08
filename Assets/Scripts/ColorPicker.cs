@@ -5,16 +5,24 @@ using UnityEngine.UI;
 
 public class ColorPicker : MonoBehaviour
 {
-    Slider hueSlider;
+    [SerializeField] Slider hueSlider;
+    [SerializeField] Slider satSlider;
+    [SerializeField] Slider valSlider;
+    [SerializeField] Image valSpr;
+    [SerializeField] Image prevImg;
 
-    private void Awake()
+    public Color GetColor()
     {
-        hueSlider = GetComponent<Slider>();
+        return Color.HSVToRGB(hueSlider.value, satSlider.value, valSlider.value);
     }
 
     public void HueChanged()
     {
-        Color c = Color.HSVToRGB(hueSlider.value, 1f, 1f);
-        Debug.Log(c.r);
+        valSpr.color = Color.HSVToRGB(hueSlider.value, 1f, 1f);
+    }
+
+    public void AnyChanged()
+    {
+        prevImg.color = GetColor();
     }
 }

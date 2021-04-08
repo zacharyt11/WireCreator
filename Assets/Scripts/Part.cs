@@ -9,6 +9,7 @@ public abstract class Part : MonoBehaviour
     public List<Part> connectedObjects;
     //public bool isDraggable = true;
     private bool shouldDrag;
+    Color col;
 
 
     public void HandleDrag()

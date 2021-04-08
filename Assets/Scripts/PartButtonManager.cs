@@ -7,6 +7,7 @@ public class PartButtonManager : MonoBehaviour
 {
     [SerializeField] List<string> names;
     [SerializeField] GameObject prefab;
+    [SerializeField] ColorPicker colPick;
 
     private void Awake()
     {
@@ -24,6 +25,7 @@ public class PartButtonManager : MonoBehaviour
 
     void SummonPart(string n)
     {
-        Instantiate(Resources.Load(n));
+        GameObject clonedPart = Instantiate(Resources.Load(n) as GameObject);
+        clonedPart.GetComponent<SpriteRenderer>().color = colPick.GetColor();
     }
 }
