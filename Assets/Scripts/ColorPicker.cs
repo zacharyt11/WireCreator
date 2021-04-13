@@ -8,6 +8,7 @@ public class ColorPicker : MonoBehaviour
     [SerializeField] Slider hueSlider;
     [SerializeField] Slider satSlider;
     [SerializeField] Slider valSlider;
+    [SerializeField] Image background;
     [SerializeField] Image valSpr;
     [SerializeField] Image prevImg;
 
@@ -18,7 +19,7 @@ public class ColorPicker : MonoBehaviour
 
     public void HueChanged()
     {
-        valSpr.color = Color.HSVToRGB(hueSlider.value, 1f, 1f);
+        valSpr.color = background.color = Color.HSVToRGB(hueSlider.value, 1f, 1f);
     }
 
     public void AnyChanged()

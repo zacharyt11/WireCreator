@@ -11,6 +11,15 @@ public abstract class Part : MonoBehaviour
     private bool shouldDrag;
     Color col;
 
+    private void OnTriggerStay(Collider other)
+    {
+        Vector3 opposite = transform.position - other.transform.position;
+        transform.position = Vector3.MoveTowards(transform.position, transform.position + opposite, Time.deltaTime);
+        if (!GetComponent<SpriteRenderer>().isVisible)
+        {
+            GetComponent<Rigidbody>().isKinematic = false;
+        }
+    }
 
     public void HandleDrag()
     {

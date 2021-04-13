@@ -25,7 +25,7 @@ public class PartButtonManager : MonoBehaviour
 
     void SummonPart(string n)
     {
-        GameObject clonedPart = Instantiate(Resources.Load(n) as GameObject);
+        GameObject clonedPart = Instantiate(Resources.Load(n) as GameObject, new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.2f, 0.2f), 0f), Quaternion.identity);
         clonedPart.GetComponent<SpriteRenderer>().color = colPick.GetColor();
     }
 }
