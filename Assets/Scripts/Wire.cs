@@ -1,16 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Wire : MonoBehaviour
 {
     struct WireNode 
     {
-        public Transform left;
-        public Transform right;
+        public Vector3 left;
+        public Vector3 right;
         public LineRenderer line;
     }
     public GameObject text;
+    [SerializeField] Toggle wireToggle;
     [SerializeField] GameObject wire;
     [SerializeField] Transform wireParent;
     [SerializeField] ParticleSystem sparks;
@@ -35,29 +37,34 @@ public class Wire : MonoBehaviour
     void Update()
     {
         Vector3 cursor = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Ray myRay = new Ray(cursor, Vector3.forward * 20f);
-        RaycastHit hit;
-
-        if (Input.GetMouseButtonDown(1) && Physics.Raycast(myRay, out hit))
+        Collider2D[] colliders;
+        colliders = Physics2D.OverlapCircleAll(cursor, 0.1f);
+        if (Input.GetMouseButtonDown(1) && colliders.Length > 0)
         {
-            sparks.transform.position = hit.point + Vector3.forward * 10f;
+            sparks.transform.position = colliders[0].transform.position + Vector3.forward * 10f;
             sparks.Play();
-            GameObject currentObj = hit.collider.gameObject;
-            if (lastClickedObj != null && CanDrawLine(lastClickedObj, currentObj))
+            GameObject currentObj = colliders[0].gameObject;
+            if (lastClickedObj != null/* && CanDrawLine(lastClickedObj, currentObj)*/)
             {
                 wireList.Add(new WireNode()
                 {
-                    line = Instantiate(wire, Vector3.zero, Quaternion.identity, wireParent).GetComponent<LineRenderer>(),
-                    left = currentObj.transform,
-                    right = lastClickedObj.transform
+                    line = Instantiate(wire, Vector3.zero, Quaternion.identity, currentObj.transform).GetComponent<LineRenderer>(),
+                    left = currentObj.transform.position,
+                    right = lastClickedObj.transform.position
                 });
                 if (currentObj.CompareTag("Source"))
                 {
-                    currentObj.GetComponent<Part>().connectedObjects.Add(lastClickedObj.GetComponent<Part>());
+                    if (currentObj != lastClickedObj)
+                    {
+                        Connect(currentObj.GetComponent<Part>(), lastClickedObj.GetComponent<Part>());
+                    }                    
                 }
                 else
                 {
-                    lastClickedObj.GetComponent<Part>().connectedObjects.Add(currentObj.GetComponent<Part>());
+                    if (lastClickedObj != currentObj && !lastClickedObj.CompareTag("Wire"))
+                    {
+                        Connect(lastClickedObj.GetComponent<Part>(), currentObj.GetComponent<Part>());
+                    }
                 }
                 lastClickedObj = null;
                 text.SetActive(false);
@@ -77,12 +84,46 @@ public class Wire : MonoBehaviour
         DrawWires();
     }
 
+    void Connect(Part g, Part c)
+    {
+        if (wireToggle.isOn)
+        {
+            if (!g.wiredObjects.Contains(c))
+            {
+                g.wiredObjects.Add(c);
+            }
+        }
+       /* else if (wireToggle.isOn)
+        {
+            if (!c.wiredObjects.Contains(g))
+            {
+                c.wiredObjects.Add(g);
+            }
+        }*/
+        else if (!g.cabledObjects.Contains(c))
+        {                        
+            g.cabledObjects.Add(c);
+        }/*
+        else if (!c.cabledObjects.Contains(g))
+        {
+            c.cabledObjects.Add(g);
+        }*/
+    }
+
     void DrawWires()
     {
-        foreach (WireNode wireNode in wireList)
+        try
         {
-            wireNode.line.SetPosition(0, wireNode.left.position);
-            wireNode.line.SetPosition(1, wireNode.right.position);
+            foreach (WireNode wireNode in wireList)
+            {
+                wireNode.line.SetPosition(0, wireNode.left);
+                wireNode.line.SetPosition(1, wireNode.right);
+                wireNode.line.GetComponent<EdgeCollider2D>().SetPoints(new List<Vector2>() { wireNode.right, wireNode.left });
+            }
+        }
+        catch
+        {
+            Debug.Log("There was an error on line 104");
         }
     }
 }

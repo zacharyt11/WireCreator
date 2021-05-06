@@ -6,7 +6,8 @@ public abstract class Part : MonoBehaviour
 {
     public bool isSource;
     public bool sourceOn;
-    public List<Part> connectedObjects;
+    public List<Part> wiredObjects;
+    public List<Part> cabledObjects;
     //public bool isDraggable = true;
     private bool shouldDrag;
     Color col;
@@ -24,17 +25,23 @@ public abstract class Part : MonoBehaviour
     public void HandleDrag()
     {
         Vector3 cursor = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Ray myRay = new Ray(cursor, Vector3.forward * 20f);
-        RaycastHit hit;
-        if (Input.GetMouseButtonDown(2) && Physics.Raycast(myRay, out hit) && hit.collider.gameObject == gameObject)
+        Collider2D collider;
+        collider = Physics2D.OverlapCircle(cursor, 0.1f);
+        if (/*(!collider.gameObject.CompareTag("Immobile") && */Input.GetKeyDown(KeyCode.C) && collider != null)
         {
             shouldDrag = true;
         }
-        if (shouldDrag)
+        if (shouldDrag && collider != null && !collider.CompareTag("Wire"))
         {
-            transform.position = new Vector3(cursor.x, cursor.y, transform.position.z);
+            Vector3 ogPos = collider.transform.position;
+            collider.transform.position = new Vector3(cursor.x, cursor.y, collider.transform.position.z);
+            Vector3 deltaPos = collider.transform.position - ogPos;
+            foreach (Part part in cabledObjects)
+            {
+                part.transform.position += deltaPos;
+            }
         }
-        if (Input.GetMouseButtonUp(2))
+        if (Input.GetKeyUp(KeyCode.C))
         {
             shouldDrag = false;
         }
@@ -44,7 +51,7 @@ public abstract class Part : MonoBehaviour
     {
         if (isSource)
         {
-            foreach (Part connectedObject in connectedObjects)
+            foreach (Part connectedObject in wiredObjects)
             {
                 IActivatable a = connectedObject.GetComponent(typeof(IActivatable)) as IActivatable;
                 if (a != null)
